@@ -302,16 +302,19 @@ class LightevalTask:
                 self._docs = self.remove_duplicate_docs(self._docs)
         return self._docs
 
-    def get_docs(self, max_samples: int | None = None) -> list[Doc]:
+    def get_docs(self, max_samples: int | None = None, disable_shuffle: bool = False) -> list[Doc]:
         eval_docs = self.eval_docs()
 
         if len(eval_docs) == 0:
             raise ValueError(f"Task {self.name} has no documents to evaluate skipping.")
 
         n_samples = min(max_samples, len(eval_docs)) if max_samples else len(eval_docs)
-        rnd = random.Random()
-        rnd.seed(42)
-        rnd.shuffle(eval_docs)
+        if not disable_shuffle:
+            rnd = random.Random()
+            rnd.seed(42)
+            rnd.shuffle(eval_docs)
+        else:
+            rnd = None
 
         docs = []
 

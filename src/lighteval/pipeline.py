@@ -107,6 +107,8 @@ class PipelineParameters:
     load_responses_from_details_date_id: str | None = None
     bootstrap_iters: int = 1000
 
+    disable_shuffle: bool = False
+
     def __post_init__(self):  # noqa C901
         # Import testing
         if self.launcher_type == ParallelismManager.ACCELERATE:
@@ -252,7 +254,9 @@ class Pipeline:
         self.tasks_dict: dict[str, LightevalTask] = registry.get_tasks_from_configs(task_configs)
         LightevalTask.load_datasets(self.tasks_dict, self.pipeline_parameters.dataset_loading_processes)
         self.documents_dict = {
-            task.full_name: task.get_docs(self.pipeline_parameters.max_samples) for _, task in self.tasks_dict.items()
+            task.full_name: task.get_docs(self.pipeline_parameters.max_samples,
+                                          self.pipeline_parameters.disable_shuffle)
+            for _, task in self.tasks_dict.items()
         }
 
         self.sampling_docs = collections.defaultdict(list)
